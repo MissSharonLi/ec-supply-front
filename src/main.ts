@@ -1,5 +1,6 @@
 import type { UserModule } from './types'
 import { ViteSSG } from 'vite-ssg'
+import { routes } from 'vue-router/auto-routes'
 
 // import "~/styles/element/index.scss";
 
@@ -9,8 +10,8 @@ import { ViteSSG } from 'vite-ssg'
 
 // or use cdn, uncomment cdn link in `index.html`
 
-import { routes } from 'vue-router/auto-routes'
 import App from './App.vue'
+import 'element-plus/theme-chalk/src/index.scss'
 
 import '~/styles/index.scss'
 
@@ -41,7 +42,7 @@ export const createApp = ViteSSG(
     // install all modules under `modules/`
     Object.values(
       import.meta.glob<{ install: UserModule }>('./modules/*.ts', { eager: true })
-    ).forEach(i => i.install?.(ctx))
+    ).forEach((i) => i.install?.(ctx))
     // ctx.app.use(Previewer)
   }
 )

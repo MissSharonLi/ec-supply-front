@@ -1,16 +1,17 @@
 {
+  "indent": 2,
   "useTabs": false,
   "tabWidth": 2,
   "printWidth": 100,
-  "trailingComma": "none",
-  "semi": false,
   "singleQuote": true,
+  "trailingComma": "none",
   "bracketSpacing": true,
-  "bracketSameLine": false,
-  "arrowParens": "avoid",
-  "proseWrap": "preserve",
+  "semi": false,
   "htmlWhitespaceSensitivity": "ignore",
+  "bracketSameLine": false,
+  "arrowParens": "always",
+  "proseWrap": "preserve",
   "endOfLine": "lf",
   "embeddedLanguageFormatting": "auto",
-  "vueIndentScriptAndStyle": true
+  "vueIndentScriptAndStyle": false
 }
