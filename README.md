@@ -38,8 +38,8 @@ npm run build
 ```bash
 git clone https://github.com/MissSharonLi/ec-supply-front
 cd ec-supply-front
-npm i
-npm run dev
+pnpm i
+pnpm run dev
 ```
 
 ### Custom theme

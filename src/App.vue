@@ -11,7 +11,7 @@
 </template>
 
 <style>
-  #app {
+#app {
   text-align: center;
   color: var(--ep-text-color-primary);
 }
