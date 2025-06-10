@@ -42,12 +42,7 @@ defineProps<{
 
       <!-- Cell slot -->
       <template v-if="col.render" #default="{ row, column, $index }">
-        <component
-          :is="col.render"
-          :row="row"
-          :column="column"
-          :$index="$index"
-        />
+        <component :is="col.render" :row="row" :column="column" :$index="$index" />
       </template>
     </ElTableColumn>
   </ElTable>

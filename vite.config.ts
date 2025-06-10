@@ -1,6 +1,7 @@
 import path from 'node:path'
 import process from 'node:process'
 import Vue from '@vitejs/plugin-vue'
+import vueJsx from '@vitejs/plugin-vue-jsx'
 import { visualizer } from 'rollup-plugin-visualizer'
 import Unocss from 'unocss/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
@@ -40,6 +41,8 @@ export default defineConfig(({ mode }) => {
       Vue({
         reactivityTransform: true
       }),
+
+      vueJsx(),
 
       VueRouter({
         extensions: ['.vue', '.md'],
