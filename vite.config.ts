@@ -38,11 +38,15 @@ export default defineConfig(({ mode }) => {
     },
 
     plugins: [
-      Vue({
-        reactivityTransform: true
-      }),
+      Vue(),
 
-      vueJsx(),
+      vueJsx({
+        reactivityTransform: true,
+        jsx: {
+          factory: 'h',
+          fragment: 'Fragment'
+        }
+      } as any),
 
       VueRouter({
         extensions: ['.vue', '.md'],

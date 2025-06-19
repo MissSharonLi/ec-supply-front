@@ -2,6 +2,9 @@
   "compilerOptions": {
     "target": "esnext",
     "jsx": "preserve",
+    "jsxFactory": "h", // 指定工厂函数（可选，plugin 中已经生效）
+    "jsxFragmentFactory": "Fragment",
+    "jsxImportSource": "vue",
     "lib": ["esnext", "dom"],
     "useDefineForClassFields": true,
     "baseUrl": ".",
@@ -11,7 +14,7 @@
       "~/*": ["src/*"]
     },
     "resolveJsonModule": true,
-    "types": ["vite/client", "unplugin-vue-router/client", "node"],
+    "types": ["vite/client", "unplugin-vue-router/client", "node", "@vue/runtime-dom"],
     "strict": true,
     "sourceMap": true,
     "esModuleInterop": true,
@@ -20,5 +23,5 @@
   "vueCompilerOptions": {
     "target": 3
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "src/global.d.ts"]
 }

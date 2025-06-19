@@ -1,12 +1,29 @@
 <script lang="tsx" setup>
 const tableProps = {
+  dataSource: [
+    {
+      date: '2016-05-03',
+      name: 'Tom',
+      address: 'No. 189, Grove St, Los Angeles'
+    },
+    {
+      date: '2016-05-02',
+      name: 'Tom',
+      address: 'No. 189, Grove St, Los Angeles'
+    },
+    {
+      date: '2016-05-04',
+      name: 'Tom',
+      address: 'No. 189, Grove St, Los Angeles'
+    }
+  ],
   border: true,
-  columns: Array<any> = [
+  columns: [
     {
       prop: 'date',
       label: 'Date',
       width: '180',
-      render: ({ row }) => {
+      render: ({ row }: any) => {
         return (<div>{row.name}</div>)
       }
     },
