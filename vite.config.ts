@@ -128,6 +128,7 @@ export default defineConfig(({ mode }) => {
     },
 
     server: {
+      hmr: true, // 开启热更新
       port: 5173,
       // 关闭预构建依赖的浏览器重新加载
       watch: {

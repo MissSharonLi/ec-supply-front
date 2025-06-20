@@ -86,7 +86,7 @@ export default antfu(
       'vue/max-attributes-per-line': [
         'error',
         {
-          singleline: 5,
+          singleline: 3,
           multiline: {
             max: 1
           }

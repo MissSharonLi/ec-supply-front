@@ -1,5 +1,9 @@
+<script setup lang="ts">
+import { zhCn } from 'element-plus/es/locales.mjs'
+</script>
+
 <template>
-  <ElConfigProvider namespace="ep">
+  <ElConfigProvider namespace="ep" :locale="zhCn">
     <BaseHeader />
     <div class="main-container flex">
       <BaseSide />

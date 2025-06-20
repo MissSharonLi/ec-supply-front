@@ -32,7 +32,7 @@ import { toggleDark } from '~/composables'
     <ElMenuItem index="3" disabled>Info</ElMenuItem>
     <ElMenuItem index="4">Orders</ElMenuItem>
 
-    <ElMenuItem h="full" @click="toggleDark()">
+    <ElMenuItem h="full" index="5" @click="toggleDark()">
       <button
         class="w-full cursor-pointer border-none bg-transparent"
         style="height: var(--ep-menu-item-height)"
@@ -41,7 +41,7 @@ import { toggleDark } from '~/composables'
       </button>
     </ElMenuItem>
 
-    <ElMenuItem h="full">
+    <ElMenuItem index="6" h="full">
       <a class="size-full flex items-center justify-center" :href="repository.url" target="_blank">
         <div i-ri-github-fill />
       </a>
