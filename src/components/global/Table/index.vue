@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ElTable, ElTableColumn } from 'element-plus'
 import { debounce, throttle } from 'lodash'
+import { cloneDeep } from 'lodash-es' // 使用高效深拷贝
 import { computed, defineEmits, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 
 // Column 类型定义
@@ -22,11 +23,12 @@ interface Column {
 // Props 类型
 interface Props {
   border?: boolean
+  maxHeight?: number
   dataSource?: any[]
   columns?: Column[]
   height?: number
-  isfix?: boolean
-  isHeight?: boolean
+  isfix?: boolean // 是否开启固定
+  isHeight?: boolean // 是否开启自定义高度
   loading?: boolean
   size?: string
   pageDisabled?: boolean
@@ -132,7 +134,7 @@ function handleCurrentChange(val: number) {
       <template v-if="col.render" #default="{ row, column, $index }">
         <component
           :is="col.render"
-          :row="row"
+          :row="cloneDeep(row)"
           :column="column"
           :$index="$index"
         />
@@ -182,10 +184,10 @@ function handleCurrentChange(val: number) {
   line-height: 28px;
   height: 28px;
 }
-.pagination.ep-pagination.is-background.ep-pagination--small .btn-next,
-.pagination.ep-pagination.is-background.ep-pagination--small .btn-prev,
-.pagination.ep-pagination.is-background.ep-pagination--small .ep-pager,
-.pagination.ep-pagination.is-background.ep-pagination--small .ep-pagination__jump {
+.pagination.ep-pagination.ep-pagination--small .btn-next,
+.pagination.ep-pagination.ep-pagination--small .btn-prev,
+.pagination.ep-pagination.ep-pagination--small .ep-pager,
+.pagination.ep-pagination.ep-pagination--small .ep-pagination__jump {
   display: inline-block;
   vertical-align: middle;
 }

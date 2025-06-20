@@ -57,11 +57,35 @@ setTimeout(() => {
     address: 'No. 189, Grove St, Los Angeles'
   }]
 }, 5000)
+const formProps = ref({
+  inline: true,
+  isFilter: true,
+  isMore: true,
+  isAuto: true,
+  values: {}, // add this property
+  formItem: [{
+    type: 'text',
+    label: '名称',
+    prop: 'name',
+    placeholder: '请输入名称'
+  }, {
+    type: 'text',
+    label: '名称',
+    prop: 'name',
+    placeholder: '请输入名称'
+  }, {
+    type: 'text',
+    label: '名称',
+    prop: 'name',
+    placeholder: '请输入名称'
+  }] // add this property
+
+})
 </script>
 
 <template>
   <div style="padding: 20px">
-    <Logos my="4" />
+    <CustomForm v-bind="formProps" v-model:values="formProps.values" @toggle="console.warn(formProps.values)" />
     <Table v-bind="tableProps" :data-source="dataSource" />
   <!-- <HelloWorld msg="test" /> -->
   </div>

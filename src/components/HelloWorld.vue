@@ -61,7 +61,12 @@ const value1 = ref(true)
 
   <div class="my-2">
     <ElInput v-model="input" class="m-2" style="width: 200px" />
-    <ElDatePicker v-model="curDate" class="m-2" type="date" placeholder="Pick a day" />
+    <ElDatePicker
+      v-model="curDate"
+      class="m-2"
+      type="date"
+      placeholder="Pick a day"
+    />
   </div>
 
   <p>For example, we can custom primary color to 'green'.</p>

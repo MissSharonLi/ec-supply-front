@@ -25,6 +25,10 @@ export default defineConfig(({ mode }) => {
       extensions: ['.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
     },
 
+    components: {
+      dirs: ['src/components/global'] // 全局组件
+    },
+
     css: {
       preprocessorOptions: {
         scss: {
