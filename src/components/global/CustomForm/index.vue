@@ -26,12 +26,9 @@ import {
 import isEqual from 'lodash/isEqual' // 添加深度比较工具
 import {
   computed,
-  defineEmits,
-  defineProps,
   onMounted,
   ref,
-  watch,
-  withDefaults
+  watch
 } from 'vue'
 // import InputFile from './InputFile.vue'
 // import InputFileImage from './InputFileImage.vue'

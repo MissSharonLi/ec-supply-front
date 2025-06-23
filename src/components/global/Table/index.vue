@@ -2,7 +2,7 @@
 import { ElTable, ElTableColumn } from 'element-plus'
 import { debounce, throttle } from 'lodash'
 import { cloneDeep } from 'lodash-es' // 使用高效深拷贝
-import { computed, defineEmits, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 
 // Column 类型定义
 interface RenderScope {
