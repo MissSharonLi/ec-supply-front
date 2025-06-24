@@ -53,7 +53,7 @@ function createService(): AxiosInstance {
     timeout: 30000,
     headers: {
       'Content-Type': 'application/json;charset=UTF-8',
-      Accept: 'application/json'
+      'Accept': 'application/json'
     },
     validateStatus: (status) => status < 500
   })
