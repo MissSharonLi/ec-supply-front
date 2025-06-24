@@ -9,6 +9,7 @@ import Components from 'unplugin-vue-components/vite'
 import VueRouter from 'unplugin-vue-router/vite'
 import { defineConfig, loadEnv } from 'vite'
 import viteCompression from 'vite-plugin-compression'
+import proxy from './proxy'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -140,11 +141,21 @@ export default defineConfig(({ mode }) => {
         ignored: ['!**/node_modules/element-plus/**']
       },
       proxy: {
-        '/api': {
-          target: 'http://your-api-server.com',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, '')
-        }
+        ...proxy.reduce(
+          (prev, { baseUrl, target, secure, changeOrigin, pathRewrite, ...other }) => {
+            prev[baseUrl] = {
+              target,
+              secure,
+              changeOrigin,
+              ...other,
+              pathRewrite: {
+                [`^${baseUrl}`]: pathRewrite
+              }
+            }
+            return prev
+          },
+          {}
+        )
       }
     },
 
