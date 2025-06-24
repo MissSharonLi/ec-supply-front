@@ -77,8 +77,8 @@ const tableHeight = computed(() => {
 })
 // 设置表格高度
 function setTableHeight() {
-  clientHeight.value = window.innerHeight - commonTable.value.$el.getBoundingClientRect().top - 70
   nextTick(() => {
+    clientHeight.value = window.innerHeight - commonTable.value.$el.getBoundingClientRect().top - 70
     if (commonTable.value && commonTable.value.doLayout) {
       commonTable.value.doLayout()
     }
@@ -108,6 +108,10 @@ function handleCurrentChange(val: number) {
   console.warn(`current page: ${val}`)
   emit('handleCurrentChange', val)
 }
+// 暴露特殊事件
+defineExpose({
+  setTableHeight
+})
 </script>
 
 <template>

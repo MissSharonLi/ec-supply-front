@@ -1,5 +1,8 @@
 <script lang="tsx" setup>
 import { ref } from 'vue'
+import Table from '~/components/global/Table/index.vue'
+
+const tableRef = ref<InstanceType<typeof Table> | null>(null)
 
 const tableProps = ref({
   columns: [
@@ -66,27 +69,55 @@ const formProps = ref({
   formItem: [{
     type: 'text',
     label: '名称',
-    prop: 'name',
+    prop: 'name1',
+    placeholder: '请输入名称',
+    inputOtherAttrs: {
+      clearable: true
+    },
+    inputNativeOn: {
+      click: 'nameClick'
+    }
+  }, {
+    type: 'text',
+    label: '名称',
+    prop: 'name2',
     placeholder: '请输入名称'
   }, {
     type: 'text',
     label: '名称',
-    prop: 'name',
+    prop: 'name3',
     placeholder: '请输入名称'
   }, {
-    type: 'text',
-    label: '名称',
-    prop: 'name',
-    placeholder: '请输入名称'
-  }] // add this property
+    type: 'slot',
+    slots: 'buttons',
+    prop: 'buttons'
+  }]
 
 })
+function handleBlur() {
+  console.warn('name1Blur')
+}
 </script>
 
 <template>
   <div style="padding: 20px">
-    <CustomForm v-bind="formProps" v-model:values="formProps.values" @toggle="console.warn(formProps.values)" />
-    <Table v-bind="tableProps" :data-source="dataSource" />
+    <CustomForm
+      v-bind="formProps"
+      v-model:values="formProps.values"
+      @name1-blur="handleBlur"
+      @name1-click="console.log('nameClick')"
+      @toggle="tableRef && tableRef.setTableHeight()"
+    >
+      <template #footer>
+        <div>fo</div>
+      </template>
+    </CustomForm>
+
+    <Table
+      ref="tableRef"
+      v-bind="tableProps"
+      :data-source="dataSource"
+    />
   <!-- <HelloWorld msg="test" /> -->
   </div>
 </template>

@@ -26,13 +26,39 @@ import {
 import isEqual from 'lodash/isEqual' // 添加深度比较工具
 import {
   computed,
+  nextTick,
   onMounted,
+  onUpdated,
   ref,
+  useAttrs,
   watch
 } from 'vue'
+import config, { inputs, times } from './config'
+
+// 默认值
+const props = withDefaults(defineProps<CustomFormProps>(), {
+  isFooter: false,
+  rowAttrs: () => ({ gutter: 20, justify: 'start', tag: 'ElRow' }),
+  isFilter: false,
+  filterLimitSize: 1,
+  isAuto: false,
+  isMore: true,
+  size: 'small',
+  labelWidth: '85px',
+  rules: () => ({}),
+  loading: false,
+  inlineMessage: false
+})
+// 允许 emit 任意事件类型
+const emit = defineEmits<{
+  (e: 'setRef', form: FormInstance | null): void
+  (e: 'toggle'): void
+  (e: 'update:values', values: Record<string, any>): void
+  (e: string, ...args: any[]): void // 允许任意事件
+}>()
+const attrs = useAttrs()
 // import InputFile from './InputFile.vue'
 // import InputFileImage from './InputFileImage.vue'
-
 // 类型定义
 interface FormItemOption {
   label: string
@@ -71,10 +97,11 @@ interface FormItem {
 }
 
 interface CustomFormProps {
-  rowAttrs?: RowProps
-  isFilter?: boolean
-  filterLimitSize?: number
-  isAuto?: boolean
+  isFooter?: boolean // 是否显示底部
+  rowAttrs?: RowProps // 行属性
+  isFilter?: boolean // 是否为筛选模式
+  filterLimitSize?: number // 筛选项限制
+  isAuto?: boolean // 是否为自动匹配
   isMore?: boolean
   size?: 'large' | 'default' | 'small'
   labelWidth?: string
@@ -84,34 +111,6 @@ interface CustomFormProps {
   formItem: FormItem[]
   inlineMessage?: boolean
 }
-
-const props = withDefaults(defineProps<CustomFormProps>(), {
-  rowAttrs: () => ({ gutter: 20, justify: 'start', tag: 'ElRow' }),
-  isFilter: false,
-  filterLimitSize: 1,
-  isAuto: false,
-  isMore: true,
-  size: 'small',
-  labelWidth: '85px',
-  rules: () => ({}),
-  loading: false,
-  inlineMessage: false
-})
-
-// 允许 emit 任意事件类型
-const emit = defineEmits<{
-  (e: 'setRef', form: FormInstance | null): void
-  (e: 'toggle'): void
-  (e: 'update:values', values: Record<string, any>): void
-  // 添加动态事件声明
-  (e: `${string}Change`, ...args: any[]): void
-  (e: `${string}Input`, ...args: any[]): void
-  (e: `${string}Focus`, ...args: any[]): void
-  (e: `${string}Blur`, ...args: any[]): void
-  (e: `${string}Visible-change`, ...args: any[]): void
-  (e: string, ...args: any[]): void // 允许任意事件
-}>()
-
 // 表单引用
 const formRef = ref<FormInstance | null>(null)
 const customFormRowRef = ref<HTMLElement | null>(null)
@@ -167,7 +166,7 @@ watch(formValues, (newValues) => {
   emit('update:values', newValues)
 }, { deep: true })
 
-// 修复 setFilterHeight
+// 设置筛选高度
 function setFilterHeight() {
   props.formItem.forEach((item, index) => {
     if (index + 1 > props.filterLimitSize && item.type !== 'slot') {
@@ -176,33 +175,32 @@ function setFilterHeight() {
   })
 }
 
-// 修复 shiftForm
-function shiftForm() {
+// 切换
+async function shiftForm() {
   isShift.value = !isShift.value
-  props.formItem.forEach((item, index) => {
-    if (
-      !isToggle.value
-      && index + 1 > props.filterLimitSize
-      && item.type !== 'slot'
-      && props.isMore
-    ) {
-      itemVisibility.value[item.prop] = isToggle.value
+
+  // 只更新可见项的显示状态
+  for (const [index, item] of props.formItem.entries()) {
+    const shouldShow = !isToggle.value && index + 1 > props.filterLimitSize && item.type !== 'slot'
+      ? isToggle.value
+      : !isShift.value
+
+    if (itemVisibility.value[item.prop] !== shouldShow) {
+      itemVisibility.value[item.prop] = shouldShow
     }
-    else {
-      itemVisibility.value[item.prop] = !isShift.value
-    }
-  })
-  emit('toggle')
+  }
+
+  await nextTick()
   setSelectArray()
   setTableHeight()
 }
 
-// 方法
+// 自定义 label 格式
 function labelFormat(label?: string) {
   if (label !== undefined) return `${label}：`
   return label
 }
-
+// 将字符串转换为数组
 function getArrayFromString(str?: string): string[] {
   if (!str) return []
   return str
@@ -210,7 +208,7 @@ function getArrayFromString(str?: string): string[] {
     .split(' ')
     .filter((item) => item !== '')
 }
-
+// 自定义 slot 格式
 function slotFormat(value: string | { name?: string, text?: string, alias?: string }) {
   if (typeof value === 'object') {
     return {
@@ -221,124 +219,103 @@ function slotFormat(value: string | { name?: string, text?: string, alias?: stri
   }
   return { name: '', text: '', alias: '' }
 }
-
-function nativeOnEmit(item: FormItem, type: string, event: Event) {
-  if (item.inputNativeOn && item.inputNativeOn[type]) {
-    emit(item.inputNativeOn[type], item, event)
+// 动态触发父组件传入的事件（如 onTextFocus）
+function triggerAttrEvent(eventName: string, ...args: any[]) {
+  const handlerName = `on${initialCapitalization(eventName)}`
+  const handler = attrs[handlerName]
+  if (typeof handler === 'function') {
+    Promise.resolve().then(() => handler(...args)) // 快速且兼容性强
   }
 }
-
-function getEvents(item: FormItem) {
-  const events: Record<string, (event: Event) => void> = {}
-
-  // 通用事件处理
-  const commonEvents = ['change', 'input', 'focus', 'blur', 'visible-change']
-  commonEvents.forEach((eventName) => {
-    events[eventName] = (...args: any[]) => {
-      emit(`${item.prop}${capitalize(eventName)}`, ...args)
-    }
-  })
-
-  // 特殊处理原生事件
-  if (item.inputNativeOn) {
-    Object.entries(item.inputNativeOn).forEach(([eventName, emitName]) => {
-      events[eventName] = (event: Event) => {
-        emit(emitName, item, event)
-      }
-    })
-  }
-
-  return events
+// 获取每种的event列表，采用 prop+原事件名 trigger出去(如 onTextFocus)
+function getEvents({ type, prop }: { type: string, prop: string }) {
+  const { events } = config
+  const match
+    = events.find((e) => {
+      return new RegExp(e.type, 'g').test(type)
+    }) || {}
+  const evt = ('event' in match && Array.isArray(match.event))
+    ? match.event.reduce((prev: { [x: string]: (...args: any) => void }, cur: string) => {
+      prev[cur] = triggerEvents(`${prop}${initialCapitalization(cur)}`)
+      return prev
+    }, {})
+    : {}
+  return evt
 }
-
-function capitalize(str: string) {
+// 触发事件
+function triggerEvents(key: string) {
+  return (...args: any) => {
+    triggerAttrEvent(key, ...args)
+  }
+}
+// 首字母大写
+function initialCapitalization(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
-
+// 判断是否为输入框
 function isInput(type: string) {
-  const inputTypes = ['text', 'textarea', 'password', 'url', 'email', 'search']
-  return inputTypes.includes(type)
+  return new RegExp(inputs, 'g').test(type)
 }
 
 // 修复日期选择器类型检查
 function isDatePickerOrDatetimePicker(type: string): type is DatePickType {
-  const dateTypes: DatePickType[] = [
-    'year',
-    'month',
-    'date',
-    'dates',
-    'week',
-    'datetime',
-    'datetimerange',
-    'daterange',
-    'monthrange',
-    'yearrange'
-  ]
-  return dateTypes.includes(type as DatePickType)
+  return new RegExp(times, 'g').test(type)
 }
 
 // 添加日期选择器类型转换方法
 function getDatePickerType(type: string): DatePickType {
   return type as DatePickType
 }
-
+// 切换
 function toggleMore() {
   isToggle.value = !isToggle.value
   setFilterHeight()
   setTableHeight()
 }
-
+// 设置表格高度
 function setTableHeight() {
   emit('toggle')
 }
 
-// 修复 setSelectArray 函数
+// 设置选中数组
 function setSelectArray() {
-  // 创建临时类型以包含 value 属性
-  type FormItemWithValue = FormItem & { value?: string }
+  const newItems: FormItem[] = []
 
-  const newItems: FormItemWithValue[] = JSON.parse(JSON.stringify(props.formItem))
+  for (const item of props.formItem) {
+    const val = formValues.value[item.prop]
+    if (val === undefined || val === null || val === '') continue
 
-  newItems.forEach((item) => {
-    const value = formValues.value[item.prop]
-    if (value !== undefined && value !== null && value !== '') {
-      if (Array.isArray(value)) {
-        if (value.length > 0) {
-          const separator = item.type === 'select' || item.type === 'cascader' ? '；' : ' 至 '
-          if (item.type === 'select' || item.type === 'cascader') {
-            const labels: string[] = []
-            value.forEach((val) => {
-              const option = item.options?.find((opt) => opt.value === val)
-              if (option) labels.push(option.label || option.text || '')
-            })
-            item.value = labels.join(separator)
-          }
-          else if (item.type === 'datetimerange' || item.type === 'daterange') {
-            item.value = value.join(separator)
-          }
-          else {
-            item.value = value.join(separator)
-          }
-        }
+    let displayValue = ''
+    if (Array.isArray(val)) {
+      if (val.length === 0) continue
+      if (['select', 'cascader'].includes(item.type)) {
+        displayValue = val
+          .map((v) => item.options?.find((opt) => opt.value === v)?.label || '')
+          .join('；')
       }
       else {
-        if (item.type === 'textarea' || item.labelAttrs) {
-          const separators = [' ', ',', '，', ';', '；', '\n']
-          const separator = separators.find((sep) => value.includes(sep)) || ' '
-          item.value = value.split(separator).join('；')
-        }
-        else if (item.type === 'select' || item.type === 'checkbox' || item.type === 'cascader') {
-          const option = item.options?.find((opt) => opt.value === value)
-          item.value = option ? option.label || option.text || '' : ''
-        }
-        else {
-          item.value = value
-        }
+        displayValue = val.join(item.type.includes('range') ? ' 至 ' : '；')
       }
     }
-  })
+    else {
+      if (item.type === 'textarea') {
+        displayValue = val.split(/[\s,，;；]+/).join('；')
+      }
+      else if (['select', 'checkbox', 'cascader'].includes(item.type)) {
+        displayValue = item.options?.find((opt) => opt.value === val)?.label || ''
+      }
+      else {
+        displayValue = val
+      }
+    }
 
-  selectData.value = newItems.filter((item) => item.value !== undefined) as FormItem[]
+    newItems.push({
+      ...item,
+      value: displayValue
+    })
+  }
+
+  selectData.value = newItems
 }
 
 function visibleChange(val: boolean) {
@@ -354,33 +331,20 @@ function visibleChange(val: boolean) {
 onMounted(() => {
   // 设置ref
   emit('setRef', formRef.value)
-
   // 如果是筛选模式，初始化显示状态
-  if (props.isFilter) {
-    props.formItem.forEach((item) => {
-      item.show = true
-    })
-    if (props.isMore) {
-      setFilterHeight()
-    }
+  if (props.isFilter && props.isMore) {
+    setFilterHeight()
   }
 })
-
-// onUpdated(() => {
-//   if (props.isFilter) {
-//     setTableHeight()
-//   }
-// })
+//
+onUpdated(() => {
+  props.isFilter && setFilterHeight()
+})
 
 // 监听表单项变化
 watch(() => props.formItem, () => {
-  if (props.isFilter) {
-    props.formItem.forEach((item) => {
-      item.show = true
-    })
-    if (props.isMore) {
-      setFilterHeight()
-    }
+  if (props.isFilter && props.isMore) {
+    setFilterHeight()
   }
 }, { deep: true })
 </script>
@@ -436,7 +400,7 @@ watch(() => props.formItem, () => {
       </template>
       <ElCol
         v-for="(item, index) in formItem"
-        v-show="item.show || !isFilter"
+        v-show="itemVisibility[item.prop] || !isFilter"
         :key="index"
         v-bind="item.colAttrs ? item.colAttrs : colAttrs"
         class="custom-form__cell"
@@ -515,7 +479,6 @@ watch(() => props.formItem, () => {
             :type="item.type"
             v-bind="item.inputOtherAttrs"
             v-on="getEvents(item)"
-            @click="nativeOnEmit(item, 'click', $event)"
           >
             <template
               v-for="slotItem in item.slots"
@@ -534,7 +497,6 @@ watch(() => props.formItem, () => {
             v-model="formValues[item.prop]"
             v-bind="item.inputOtherAttrs"
             v-on="getEvents(item)"
-            @click="nativeOnEmit(item, 'click', $event)"
           />
 
           <!-- select 选择框 -->
@@ -651,7 +613,8 @@ watch(() => props.formItem, () => {
           <ElButton
             v-if="isFilter && item.type === 'slot' && item.slots === 'buttons' && isMore"
             class="more"
-            type="text"
+            type="primary"
+            text
             @click="toggleMore"
           >
             {{ toggleText }}
@@ -662,7 +625,7 @@ watch(() => props.formItem, () => {
         </ElFormItem>
       </ElCol>
     </ElRow>
-    <div class="custom-form__footer center-xy">
+    <div v-if="isFooter" class="custom-form__footer center-xy">
       <slot name="footer" />
     </div>
     <div v-if="isFilter" class="custom-form__shift" @click="shiftForm">
@@ -679,7 +642,6 @@ watch(() => props.formItem, () => {
   display: flex;
   position: relative;
   flex-direction: column;
-  background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 
@@ -694,8 +656,8 @@ watch(() => props.formItem, () => {
     scroll-snap-align: start;
     scroll-snap-stop: always;
     min-height: 38px;
-    margin-bottom: 16px;
-
+    font-size: 12px;
+    text-align: left;
     &__title {
       font-size: 16px;
       font-weight: bold;
@@ -736,7 +698,6 @@ watch(() => props.formItem, () => {
     .more {
       text-align: right;
       float: right;
-      margin-top: 8px;
     }
   }
 
@@ -776,7 +737,6 @@ watch(() => props.formItem, () => {
   }
 
   &.filter-form-content {
-    background-color: #fff;
     padding: 20px 16px 16px;
     border-radius: 8px;
     margin-bottom: 16px;
