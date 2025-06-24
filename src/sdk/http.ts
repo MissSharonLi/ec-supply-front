@@ -1,4 +1,3 @@
-// src/utils/request.ts
 import type {
   AxiosInstance,
   AxiosRequestConfig,
@@ -54,7 +53,7 @@ function createService(): AxiosInstance {
     timeout: 30000,
     headers: {
       'Content-Type': 'application/json;charset=UTF-8',
-      'Accept': 'application/json'
+      Accept: 'application/json'
     },
     validateStatus: (status) => status < 500
   })
@@ -128,7 +127,7 @@ function createService(): AxiosInstance {
         return Promise.reject(res)
       }
 
-      if (!((response.config as CustomAxiosRequestConfig).isHandleResponse)) {
+      if (!(response.config as CustomAxiosRequestConfig).isHandleResponse) {
         ElMessage.error(res.message || '请求失败')
       }
 
@@ -139,9 +138,7 @@ function createService(): AxiosInstance {
         return Promise.reject(new Error('请求取消'))
       }
 
-      ElMessage.error(
-        error?.response?.data?.message || error.message || '请求异常，请稍后再试'
-      )
+      ElMessage.error(error?.response?.data?.message || error.message || '请求异常，请稍后再试')
 
       return Promise.reject(error)
     }

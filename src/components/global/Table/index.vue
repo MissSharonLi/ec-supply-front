@@ -20,11 +20,14 @@ interface Column {
   render?: (scope: RenderScope) => any // 对应默认插槽
   [key: string]: any
 }
+interface DataSourceItem {
+  [key: string]: any
+}
 // Props 类型
 interface Props {
   border?: boolean
   maxHeight?: number
-  dataSource?: any[]
+  dataSource?: DataSourceItem[]
   columns?: Column[]
   height?: number
   isfix?: boolean // 是否开启固定

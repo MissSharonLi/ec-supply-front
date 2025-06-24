@@ -3,8 +3,8 @@ import { ref } from 'vue'
 import Table from '~/components/global/Table/index.vue'
 
 const tableRef = ref<InstanceType<typeof Table> | null>(null)
-
 const tableProps = ref({
+  dataSource: [] as any,
   columns: [
     {
       prop: 'date',
@@ -24,7 +24,7 @@ const tableProps = ref({
     { prop: 'address', label: 'Address' }
   ]
 })
-const dataSource = ref([
+tableProps.value.dataSource = [
   {
     date: '2016-05-03',
     name: 'Tom',
@@ -40,9 +40,9 @@ const dataSource = ref([
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles'
   }
-])
+]
 setTimeout(() => {
-  dataSource.value = [{
+  tableProps.value.dataSource = [{
     date: '2016-06-03',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles'
@@ -57,7 +57,8 @@ setTimeout(() => {
   }, {
     date: '2016-05-04',
     name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles'
+    address: 'No. 189, Grove St, Los Angeles',
+    id: '1'
   }]
 }, 5000)
 const formProps = ref({
@@ -71,6 +72,7 @@ const formProps = ref({
     label: '名称',
     prop: 'name1',
     placeholder: '请输入名称',
+    text: '123',
     inputOtherAttrs: {
       clearable: true
     },
@@ -116,7 +118,6 @@ function handleBlur() {
     <Table
       ref="tableRef"
       v-bind="tableProps"
-      :data-source="dataSource"
     />
   <!-- <HelloWorld msg="test" /> -->
   </div>
